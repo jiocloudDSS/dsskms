@@ -22,6 +22,7 @@ public class DecryptMain extends HttpServlet {
 	private static String USERID = "user_id";
     private static String DATA_KEY = "encrypted_data_key";
     private static String DATA_IV = "encrypted_data_iv";
+    private static String ENCRYPTED_MASTER_KEY = "encryptedMKVersionId";
     private String raw_data_key_str, raw_data_iv_str;
     boolean get_decrypted_keys_successfully = false;
     HashMap<String, String>queryParamsDecrypt;
@@ -44,9 +45,9 @@ public class DecryptMain extends HttpServlet {
         out.println("<h1>Hello harshal! This is decrypt function</h1>");
         parseRequestParams(request, out);
         
-        if (queryParamsDecrypt.containsKey(USERID) && queryParamsDecrypt.containsKey(DATA_KEY) && queryParamsDecrypt.containsKey(DATA_IV)) {
-        	MKRequester requester = new MKRequester(queryParamsDecrypt.get(USERID));
-        	String master_key = requester.getMasterKey();
+        if (queryParamsDecrypt.containsKey(USERID) && queryParamsDecrypt.containsKey(DATA_KEY) && queryParamsDecrypt.containsKey(DATA_IV) && queryParamsDecrypt.containsKey(ENCRYPTED_MASTER_KEY)) {
+        	MKRequester requester = new MKRequester();
+        	String master_key = requester.getMasterKeyForVersion(queryParamsDecrypt.get(ENCRYPTED_MASTER_KEY));
         	try{
         		if (master_key != null){
         			CryptoMain crypto = CryptoMain.getInstance();
@@ -75,8 +76,8 @@ public class DecryptMain extends HttpServlet {
     }
 	
 	private boolean checkKeys(){
-		if (raw_data_key_str != null && raw_data_key_str.length() == 512) {
-			if (raw_data_iv_str != null && raw_data_iv_str.length() == 128) {
+		if (raw_data_key_str != null && raw_data_key_str.length() == 64) {
+			if (raw_data_iv_str != null && raw_data_iv_str.length() == 16) {
 				return true;
 			}
 		}
@@ -98,7 +99,7 @@ public class DecryptMain extends HttpServlet {
 		JSONObject jsonObj = new JSONObject();
 		if (errorMsg == null){
 			jsonObj.put("KMS_RAW_DATA_KEY", raw_data_key_str);
-			jsonObj.put("KMS_RAW_DATA_IV", raw_data_iv_str);		
+			jsonObj.put("KMS_RAW_DATA_IV", raw_data_iv_str);
 		} else {
 			jsonObj.put("KMS_ERROR", errorMsg);
 		}
@@ -120,7 +121,17 @@ public class DecryptMain extends HttpServlet {
         			queryParamsDecrypt.put(paramKey, paramValue);
         		}
         	}
-        }
+        } 
+        parseReqAttributes();
+	}
+	
+	private void parseReqAttributes() {
+		for (String key: queryParamsDecrypt.keySet()){
+			String val = queryParamsDecrypt.get(key);
+			String reg = "\\";
+			val = val.replace(reg, "");
+			queryParamsDecrypt.put(key, val);
+		}
 	}
 
 }

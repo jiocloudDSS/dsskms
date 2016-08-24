@@ -40,7 +40,7 @@ public class EncryptMain extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
         PrintWriter out  = response.getWriter();
-        out.println("<h1>Hello harshal! This is encrypt function new</h1>");
+//        out.println("<h1>Hello harshal! This is encrypt function new</h1>");
         parseRequestParams(request, out);
 		CryptoMain crypto = CryptoMain.getInstance();
 
@@ -49,7 +49,8 @@ public class EncryptMain extends HttpServlet {
 		if (true) {
 //        	userId = queryParams.get(USERID);
 			userId = "1234";
-    		MKRequester requester = new MKRequester(userId);
+    		MKRequester requester = new MKRequester();
+    		requester.setUserId(userId);
 
         	try{        	
         		masterKey = requester.getLatestMasterKey();
@@ -88,10 +89,6 @@ public class EncryptMain extends HttpServlet {
 		// NOTE: write code to create response object
 		JSONObject jsonObj = createJsonObject();
 		response.setContentType("application/json");
-		String decoded_key = crypto.decryptText(encoded_data_key_str, masterKey);
-		String decoded_iv = crypto.decryptText(encoded_data_iv_str, masterKey);
-		jsonObj.put("KMS_DECODED_KEY", decoded_key);
-		jsonObj.put("KMS_DECODED_IV", decoded_iv);
 		out.print(jsonObj);
 
 	}

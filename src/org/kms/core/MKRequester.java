@@ -27,9 +27,12 @@ private static String DSS_MK_BUCKET = "mptest";
 //private static String MASTER_KEY = "abcdef0987654321";
 
 
-public MKRequester(String _userId) {
-	user_id = _userId;
+public MKRequester() {
 	conn = new DssConnection(DSS_ACCESS_KEY, DSS_SECRET_KEY, DSS_HOST_NAME, false);
+}
+
+public void setUserId(String _userId){
+	user_id = _userId;
 }
 
 public String getLatestMasterKey(){

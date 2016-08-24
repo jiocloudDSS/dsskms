@@ -16,7 +16,7 @@ public class CryptoMain {
 	String encrypted_data_key;
 	private static HashMap<String, CryptoMain>instanceMap = new HashMap<String, CryptoMain>();
 	
-	private static String KMS_GLOBAL_KEY = "1234";
+	private static String KMS_GLOBAL_KEY = "1234567890abcdef";
 	private static String CURRENT_INSTANCE = "current_instance";
 	private SecureRandom random;
 	
