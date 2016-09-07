@@ -101,8 +101,8 @@ public String getMasterKey() {
 			if (error.getErroCode() == 404){
 				String uid = getUserIdFromRequestMK();
 				try {
-					if (KMSUtils.getMap().containsKey(uid)) {
-						while (KMSUtils.getMap().containsKey(uid)){
+					if (!KMSUtils.putWithLock(uid)) {
+						while (KMSUtils.getMap().contains(uid)){
 							Thread.sleep(50);
 						}
 						Response res = conn.downloadObject(DSS_MK_BUCKET, mkObjectName);
@@ -117,18 +117,17 @@ public String getMasterKey() {
 							}
 						}
 					} else {
-						KMSUtils.lockMap.put(uid, new Integer(1));
 						master_key = generateRawMasterKey();
 						String encrypted_master_key = crypto.encryptKey(master_key, crypto.getGlobalKey());
 						if (putMasterKeyToBackend(encrypted_master_key)){
 							decrypted_master_key = master_key;
 						}
-						KMSUtils.lockMap.remove(uid);
+						KMSUtils.getMap().remove(uid);
 					}
 
 				} catch (Exception e) {
-					if (KMSUtils.lockMap.contains(uid)){
-						KMSUtils.lockMap.remove(uid);
+					if (KMSUtils.getMap().contains(uid)){
+						KMSUtils.getMap().remove(uid);
 					}
 					return null;
 				}
