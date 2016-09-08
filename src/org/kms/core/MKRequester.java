@@ -61,7 +61,9 @@ public String getMasterKeyForVersion(String encryptedMKStr){
 private String getUserIdFromRequestMK(){
 	int loc = mkObjectName.indexOf("_");
 	String userID = mkObjectName.substring(0, loc);
-	return userID;
+	if (loc == -1)
+		return userID;
+	else return null;
 }
 
 public String getEncryptedMKVersion() {
@@ -100,9 +102,11 @@ public String getMasterKey() {
 		} catch (ErrorResponse error) {
 			if (error.getErroCode() == 404){
 				String uid = getUserIdFromRequestMK();
+				if (uid == null) 
+					return null;
 				try {
 					if (!KMSUtils.putWithLock(uid)) {
-						while (KMSUtils.getMap().contains(uid)){
+						while (KMSUtils.getMap().containsKey(uid)){
 							Thread.sleep(50);
 						}
 						Response res = conn.downloadObject(DSS_MK_BUCKET, mkObjectName);
@@ -126,7 +130,7 @@ public String getMasterKey() {
 					}
 
 				} catch (Exception e) {
-					if (KMSUtils.getMap().contains(uid)){
+					if (KMSUtils.getMap().containsKey(uid)){
 						KMSUtils.getMap().remove(uid);
 					}
 					return null;
