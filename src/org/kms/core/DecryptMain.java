@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.simple.JSONObject;
 import org.kms.crypto.CryptoMain;
 
 /**
@@ -87,26 +86,26 @@ public class DecryptMain extends HttpServlet {
 	private void createResponseObject(HttpServletResponse response, PrintWriter out) throws Exception {
 		// TODO Auto-generated method stub
 		// NOTE: write code to create response object
-		JSONObject jsonObj = createJsonObject();
-		response.setContentType("application/json");
-		out.print(jsonObj);
+//		JSONObject jsonObj = createJsonObject();
+//		response.setContentType("application/json");
+//		out.print(jsonObj);
 		out.print("{\"KMS_RAW_DATA_KEY\":\"" + raw_data_key_str +  "\",\"KMS_RAW_DATA_IV\":\"" + raw_data_iv_str + "\"}");
 
 	}
 
 	@SuppressWarnings("unchecked")
-	private JSONObject createJsonObject() {
-		// TODO Auto-generated method stub		
-		JSONObject jsonObj = new JSONObject();
-		if (errorMsg == null){
-			jsonObj.put("KMS_RAW_DATA_KEY", raw_data_key_str);
-			jsonObj.put("KMS_RAW_DATA_IV", raw_data_iv_str);
-		} else {
-			jsonObj.put("KMS_ERROR", errorMsg);
-		}
-		return  jsonObj;
-		
-	}
+//	private JSONObject createJsonObject() {
+//		// TODO Auto-generated method stub		
+//		JSONObject jsonObj = new JSONObject();
+//		if (errorMsg == null){
+//			jsonObj.put("KMS_RAW_DATA_KEY", raw_data_key_str);
+//			jsonObj.put("KMS_RAW_DATA_IV", raw_data_iv_str);
+//		} else {
+//			jsonObj.put("KMS_ERROR", errorMsg);
+//		}
+//		return  jsonObj;
+//		
+//	}
 
 	private void parseRequestParams(HttpServletRequest request, PrintWriter out) {
 		queryParamsDecrypt = new HashMap<String, String>();
