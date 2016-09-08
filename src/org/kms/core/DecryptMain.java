@@ -45,7 +45,7 @@ public class DecryptMain extends HttpServlet {
         out.println("<h1>Hello harshal! This is decrypt function</h1>");
         parseRequestParams(request, out);
         
-        if (queryParamsDecrypt.containsKey(USERID) && queryParamsDecrypt.containsKey(DATA_KEY) && queryParamsDecrypt.containsKey(DATA_IV) && queryParamsDecrypt.containsKey(ENCRYPTED_MASTER_KEY)) {
+        if (queryParamsDecrypt.containsKey(DATA_KEY) && queryParamsDecrypt.containsKey(DATA_IV) && queryParamsDecrypt.containsKey(ENCRYPTED_MASTER_KEY)) {
         	MKRequester requester = new MKRequester();
         	String master_key = requester.getMasterKeyForVersion(queryParamsDecrypt.get(ENCRYPTED_MASTER_KEY));
         	try{
@@ -90,6 +90,7 @@ public class DecryptMain extends HttpServlet {
 		JSONObject jsonObj = createJsonObject();
 		response.setContentType("application/json");
 		out.print(jsonObj);
+		out.print("{\"KMS_RAW_DATA_KEY\":\"" + raw_data_key_str +  "\",\"KMS_RAW_DATA_IV\":\"" + raw_data_iv_str + "\"}");
 
 	}
 

@@ -40,15 +40,12 @@ public class EncryptMain extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
         PrintWriter out  = response.getWriter();
-//        out.println("<h1>Hello harshal! This is encrypt function new</h1>");
         parseRequestParams(request, out);
 		CryptoMain crypto = CryptoMain.getInstance();
 
         
-//        if (queryParams.containsKey(USERID) && queryParams.get(USERID).length() > 0){
-		if (true) {
-//        	userId = queryParams.get(USERID);
-			userId = "1234";
+        if (queryParams.containsKey(USERID) && queryParams.get(USERID).length() > 0){
+        	userId = queryParams.get(USERID);
     		MKRequester requester = new MKRequester();
     		requester.setUserId(userId);
 
@@ -87,27 +84,27 @@ public class EncryptMain extends HttpServlet {
 	private void createResponseObject(HttpServletResponse response, PrintWriter out, CryptoMain crypto) throws Exception {
 		// TODO Auto-generated method stub
 		// NOTE: write code to create response object
-		JSONObject jsonObj = createJsonObject();
-		response.setContentType("application/json");
-		out.print(jsonObj);
-
+//		JSONObject jsonObj = createJsonObject();
+//		response.setContentType("application/json");
+//		out.print(jsonObj);
+		out.print("{\"KMS_RAW_DATA_KEY\":\"" + raw_data_key_str + "\",\"KMS_ENCRYPTED_DATA_KEY\":\"" + encoded_data_key_str + "\",\"KMS_RAW_DATA_IV\":\"" + raw_data_iv_str + "\",\"KMS_ENCRYPTED_DATA_IV\":\"" + encoded_data_iv_str + "\",\"KMS_ENCRYPTED_MK_VERSION\":\"" + encryptedMKVersionId + "\"}");
 	}
 
 	@SuppressWarnings("unchecked")
-	private JSONObject createJsonObject() {
-		// TODO Auto-generated method stub	
-		JSONObject jsonObj = new JSONObject();
-		if (errorMsg == null){
-			jsonObj.put("KMS_RAW_DATA_KEY", raw_data_key_str);
-			jsonObj.put("KMS_ENCRYPTED_DATA_KEY", encoded_data_key_str);
-			jsonObj.put("KMS_RAW_DATA_IV", raw_data_iv_str);
-			jsonObj.put("KMS_ENCRYPTED_DATA_IV", encoded_data_iv_str);
-			jsonObj.put("KMS_ENCRYPTED_MK_VERSION", encryptedMKVersionId);
-		} else {
-			jsonObj.put("KMS_ERROR", errorMsg);
-		}
-		return  jsonObj;
-	}
+//	private JSONObject createJsonObject() {
+//		// TODO Auto-generated method stub	
+//		JSONObject jsonObj = new JSONObject();
+//		if (errorMsg == null){
+//			jsonObj.put("KMS_RAW_DATA_KEY", raw_data_key_str);
+//			jsonObj.put("KMS_ENCRYPTED_DATA_KEY", encoded_data_key_str);
+//			jsonObj.put("KMS_RAW_DATA_IV", raw_data_iv_str);
+//			jsonObj.put("KMS_ENCRYPTED_DATA_IV", encoded_data_iv_str);
+//			jsonObj.put("KMS_ENCRYPTED_MK_VERSION", encryptedMKVersionId);
+//		} else {
+//			jsonObj.put("KMS_ERROR", errorMsg);
+//		}
+//		return  jsonObj;
+//	}
 
 	private void parseRequestParams(HttpServletRequest request, PrintWriter out) {
 		queryParams = new HashMap<String, String>();
