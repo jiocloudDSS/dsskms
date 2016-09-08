@@ -1,6 +1,4 @@
 package org.kms.core;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -60,6 +58,14 @@ public String getMasterKeyForVersion(String encryptedMKStr){
 	return getMasterKey();
 }
 
+private String getUserIdFromRequestMK(){
+	int loc = mkObjectName.indexOf("_");
+	String userID = mkObjectName.substring(0, loc);
+	if (loc == -1)
+		return userID;
+	else return null;
+}
+
 public String getEncryptedMKVersion() {
 	CryptoMain crypto = CryptoMain.getInstance();
 	String encryptedMKVersionId;
@@ -95,13 +101,38 @@ public String getMasterKey() {
 			
 		} catch (ErrorResponse error) {
 			if (error.getErroCode() == 404){
+				String uid = getUserIdFromRequestMK();
+				if (uid == null) 
+					return null;
 				try {
-					master_key = generateRawMasterKey();
-					String encrypted_master_key = crypto.encryptKey(master_key, crypto.getGlobalKey());
-					if (putMasterKeyToBackend(encrypted_master_key)){
-						decrypted_master_key = master_key;
+					if (!KMSUtils.putWithLock(uid)) {
+						while (KMSUtils.getMap().containsKey(uid)){
+							Thread.sleep(50);
+						}
+						Response res = conn.downloadObject(DSS_MK_BUCKET, mkObjectName);
+						if (res.getStatusCode() == 200) {
+							master_key = res.getXMLString();
+							if (master_key != null){
+								try {
+									decrypted_master_key = crypto.decryptText(master_key, crypto.getGlobalKey());
+								} catch (Exception e){
+									return null;
+								}
+							}
+						}
+					} else {
+						master_key = generateRawMasterKey();
+						String encrypted_master_key = crypto.encryptKey(master_key, crypto.getGlobalKey());
+						if (putMasterKeyToBackend(encrypted_master_key)){
+							decrypted_master_key = master_key;
+						}
+						KMSUtils.getMap().remove(uid);
 					}
+
 				} catch (Exception e) {
+					if (KMSUtils.getMap().containsKey(uid)){
+						KMSUtils.getMap().remove(uid);
+					}
 					return null;
 				}
 				break;
