@@ -21,7 +21,7 @@ public static String MK_OBJ_NAME_SUFFIX = "_kms_master_key";
 private static String DSS_ACCESS_KEY = "0555b35654ad1656d804";
 private static String DSS_SECRET_KEY = "abcdefghijklmnopqrstuvwxyzabcdefghijklmn";
 private static String DSS_HOST_NAME = "10.140.13.22:8000";
-private static String DSS_MK_BUCKET = "mptest";
+private static String DSS_MK_BUCKET = "kmsbucket1";
 //private static String MASTER_KEY = "abcdef0987654321";
 
 
@@ -61,7 +61,7 @@ public String getMasterKeyForVersion(String encryptedMKStr){
 private String getUserIdFromRequestMK(){
 	int loc = mkObjectName.indexOf("_");
 	String userID = mkObjectName.substring(0, loc);
-	if (loc == -1)
+	if (loc != -1)
 		return userID;
 	else return null;
 }
