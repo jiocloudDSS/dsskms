@@ -61,7 +61,7 @@ public String getMasterKeyForVersion(String encryptedMKStr){
 private String getUserIdFromRequestMK(){
 	int loc = mkObjectName.indexOf("_");
 	String userID = mkObjectName.substring(0, loc);
-	if (loc == -1)
+	if (loc != -1)
 		return userID;
 	else return null;
 }
