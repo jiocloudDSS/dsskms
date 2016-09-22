@@ -8,6 +8,9 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.tomcat.util.codec.binary.Base64;
+import java.util.logging.Level;
+import org.kms.core.KMSUtils;
+
 
 
 public class CryptoMain {
@@ -47,18 +50,14 @@ public class CryptoMain {
     
 	public String encryptKey(String plainText, String secretKey) throws Exception {
         SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(), "AES");
-//        System.out.print(secretKey);
-//        System.out.print(plainText);
 		Cipher aesCipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
         aesCipher.init(Cipher.ENCRYPT_MODE, keySpec);
         byte[] byteCipherText = aesCipher.doFinal(plainText.getBytes());
-//        String cipherText = new String(byteCipherText, "UTF8");
         String cipherText = Base64.encodeBase64String(byteCipherText);
         return cipherText;		
 	}
 	
-    public String decryptText(String cipherText, String secretKey) throws Exception {
-    	System.out.print("this is the cipherText to decrypt: " + cipherText + " and length is: " + cipherText.length() + " \n");
+    public String decryptText(String cipherText, String secretKey, String requestId) throws Exception {
         byte[] byteCipherText = Base64.decodeBase64(cipherText);
         System.out.println(cipherText);
     	Cipher aesCipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
@@ -66,6 +65,8 @@ public class CryptoMain {
         aesCipher.init(Cipher.DECRYPT_MODE, keySpec);
         byte[] bytePlainText = aesCipher.doFinal(byteCipherText);
         String plainText = new String(bytePlainText);
+	if (requestId == null) requestId = "invalid";
+	KMSUtils.logger.logp(Level.INFO, "CryptoMain", "decyrptText", "this is decrypted text:  " + plainText + "  ::for the encrypted text:  " + cipherText + "  ::and the requestId is:  " + requestId );
         return plainText;
     }
     
