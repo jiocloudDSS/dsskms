@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.simple.JSONObject;
+//import org.json.simple.JSONObject;
 import org.kms.crypto.CryptoMain;
 
 
@@ -21,12 +21,8 @@ import org.kms.crypto.CryptoMain;
 public class EncryptMain extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	public static String USERID = "user_id";
-    public static String KEYSET = "data_key";
-    String userId, raw_data_key_str, raw_data_iv_str, encoded_data_key_str, encoded_data_iv_str, masterKey, encryptedMKVersionId;
-    boolean get_keys_successfully = false;
-    HashMap<String, String>queryParams;
-    String errorMsg = null;
-    /**
+
+	/**
      * @see HttpServlet#HttpServlet()
      */
     public EncryptMain() {
@@ -40,15 +36,13 @@ public class EncryptMain extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
         PrintWriter out  = response.getWriter();
-//        out.println("<h1>Hello harshal! This is encrypt function new</h1>");
-        parseRequestParams(request, out);
-		CryptoMain crypto = CryptoMain.getInstance();
+        String userId, raw_data_key_str, raw_data_iv_str, encoded_data_key_str, encoded_data_iv_str, masterKey, encryptedMKVersionId, errorMsg;
+        userId=raw_data_key_str= raw_data_iv_str= encoded_data_key_str= encoded_data_iv_str = masterKey = encryptedMKVersionId = errorMsg = null;
+        HashMap<String, String> queryParams = parseRequestParams(request);
+        CryptoMain crypto = CryptoMain.getInstance();
 
-        
-//        if (queryParams.containsKey(USERID) && queryParams.get(USERID).length() > 0){
-		if (true) {
-//        	userId = queryParams.get(USERID);
-			userId = "1234";
+        if (queryParams.containsKey(USERID) && queryParams.get(USERID).length() > 0){
+        	userId = queryParams.get(USERID);
     		MKRequester requester = new MKRequester();
     		requester.setUserId(userId);
 
@@ -61,7 +55,6 @@ public class EncryptMain extends HttpServlet {
         			encoded_data_iv_str = crypto.encryptKey(raw_data_iv_str, masterKey);
         			encryptedMKVersionId = requester.getEncryptedMKVersion();
         		
-        			get_keys_successfully = true;
         		} else {
         			errorMsg = "CouldNot fetch masterKey successfully";
         		}
@@ -73,7 +66,7 @@ public class EncryptMain extends HttpServlet {
         }
        
         try {
-			createResponseObject(response, out, crypto);
+			createResponseObject(response, out, raw_data_key_str, raw_data_iv_str, encoded_data_key_str, encoded_data_iv_str, encryptedMKVersionId);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -84,38 +77,36 @@ public class EncryptMain extends HttpServlet {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void createResponseObject(HttpServletResponse response, PrintWriter out, CryptoMain crypto) throws Exception {
+	private void createResponseObject(HttpServletResponse response, PrintWriter out, String raw_data_key_str, String raw_data_iv_str, String encoded_data_key_str, String encoded_data_iv_str, String encryptedMKVersionId) throws Exception {
 		// TODO Auto-generated method stub
 		// NOTE: write code to create response object
-		JSONObject jsonObj = createJsonObject();
-		response.setContentType("application/json");
-		out.print(jsonObj);
-
+//		JSONObject jsonObj = createJsonObject();
+//		response.setContentType("application/json");
+//		out.print(jsonObj);
+		out.print("{\"KMS_RAW_DATA_KEY\":\"" + raw_data_key_str + "\",\"KMS_ENCRYPTED_DATA_KEY\":\"" + encoded_data_key_str + "\",\"KMS_RAW_DATA_IV\":\"" + raw_data_iv_str + "\",\"KMS_ENCRYPTED_DATA_IV\":\"" + encoded_data_iv_str + "\",\"KMS_ENCRYPTED_MK_VERSION\":\"" + encryptedMKVersionId + "\"}");
 	}
 
 	@SuppressWarnings("unchecked")
-	private JSONObject createJsonObject() {
-		// TODO Auto-generated method stub	
-		JSONObject jsonObj = new JSONObject();
-		if (errorMsg == null){
-			jsonObj.put("KMS_RAW_DATA_KEY", raw_data_key_str);
-			jsonObj.put("KMS_ENCRYPTED_DATA_KEY", encoded_data_key_str);
-			jsonObj.put("KMS_RAW_DATA_IV", raw_data_iv_str);
-			jsonObj.put("KMS_ENCRYPTED_DATA_IV", encoded_data_iv_str);
-			jsonObj.put("KMS_ENCRYPTED_MK_VERSION", encryptedMKVersionId);
-		} else {
-			jsonObj.put("KMS_ERROR", errorMsg);
-		}
-		return  jsonObj;
-	}
+//	private JSONObject createJsonObject() {
+//		// TODO Auto-generated method stub
+//		JSONObject jsonObj = new JSONObject();
+//		if (errorMsg == null){
+//			jsonObj.put("KMS_RAW_DATA_KEY", raw_data_key_str);
+//			jsonObj.put("KMS_ENCRYPTED_DATA_KEY", encoded_data_key_str);
+//			jsonObj.put("KMS_RAW_DATA_IV", raw_data_iv_str);
+//			jsonObj.put("KMS_ENCRYPTED_DATA_IV", encoded_data_iv_str);
+//			jsonObj.put("KMS_ENCRYPTED_MK_VERSION", encryptedMKVersionId);
+//		} else {
+//			jsonObj.put("KMS_ERROR", errorMsg);
+//		}
+//		return  jsonObj;
+//	}
 
-	private void parseRequestParams(HttpServletRequest request, PrintWriter out) {
-		queryParams = new HashMap<String, String>();
+	private HashMap<String, String> parseRequestParams(HttpServletRequest request) {
+		HashMap<String,String> queryParams = new HashMap<String, String>();
 		String queryStr = request.getQueryString();
         if ( queryStr != null && queryStr.length() > 0) {
-        	out.println("found query string");
         	String[] params = queryStr.split("&");
-        	out.print(params.length);
         	for (int i=0; i < params.length; i++) {
         		String param = params[i];
         		if (param.contains("=")){
@@ -124,6 +115,7 @@ public class EncryptMain extends HttpServlet {
         		}
         	}
         }
+	return queryParams;
 	}
 
 }

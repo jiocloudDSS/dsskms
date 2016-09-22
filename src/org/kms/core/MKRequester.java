@@ -18,10 +18,10 @@ String iv_str;
 DssConnection conn;
 
 public static String MK_OBJ_NAME_SUFFIX = "_kms_master_key";
-private static String DSS_ACCESS_KEY = "0555b35654ad1656d804";
-private static String DSS_SECRET_KEY = "abcdefghijklmnopqrstuvwxyzabcdefghijklmn";
-private static String DSS_HOST_NAME = "10.140.13.22:8000";
-private static String DSS_MK_BUCKET = "mptest";
+private static String DSS_ACCESS_KEY = "access_key";//TODO:: need to put from a file
+private static String DSS_SECRET_KEY = "secret_key";//TODO:: need to put from a file
+private static String DSS_HOST_NAME = "server";
+private static String DSS_MK_BUCKET = "kmsbucket1";
 //private static String MASTER_KEY = "abcdef0987654321";
 
 
@@ -51,7 +51,7 @@ public String getLatestMasterKey(){
 public String getMasterKeyForVersion(String encryptedMKStr){
 	CryptoMain crypto = CryptoMain.getInstance();
 	try {
-		mkObjectName = crypto.decryptText(encryptedMKStr, crypto.getGlobalKey());
+		mkObjectName = crypto.decryptText(encryptedMKStr, crypto.getGlobalKey(), null);
 	} catch (Exception e){
 		mkObjectName = "";
 	}
@@ -61,7 +61,7 @@ public String getMasterKeyForVersion(String encryptedMKStr){
 private String getUserIdFromRequestMK(){
 	int loc = mkObjectName.indexOf("_");
 	String userID = mkObjectName.substring(0, loc);
-	if (loc == -1)
+	if (loc != -1)
 		return userID;
 	else return null;
 }
@@ -91,7 +91,7 @@ public String getMasterKey() {
 				master_key = res.getXMLString();
 				if (master_key != null){
 					try {
-						decrypted_master_key = crypto.decryptText(master_key, crypto.getGlobalKey());
+						decrypted_master_key = crypto.decryptText(master_key, crypto.getGlobalKey(), null);
 					} catch (Exception e){
 						return null;
 					}
@@ -114,7 +114,7 @@ public String getMasterKey() {
 							master_key = res.getXMLString();
 							if (master_key != null){
 								try {
-									decrypted_master_key = crypto.decryptText(master_key, crypto.getGlobalKey());
+									decrypted_master_key = crypto.decryptText(master_key, crypto.getGlobalKey(), null);
 								} catch (Exception e){
 									return null;
 								}
@@ -183,5 +183,4 @@ public String generateRawMasterKey() throws Exception {
 }
 
 }
-
 
