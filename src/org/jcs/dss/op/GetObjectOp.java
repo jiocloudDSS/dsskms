@@ -5,6 +5,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map.Entry;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import org.jcs.dss.auth.DssAuth;
 import org.jcs.dss.auth.DssAuthBuilder;
 import org.jcs.dss.http.ErrorResponse;
@@ -51,7 +53,6 @@ public class GetObjectOp extends ObjectOp {
 		httpHeaders.put("Date", date);
 		String path = Utils.getEncodedURL(opPath);
 		String request_url = conn.getHost() + path;
-		request_url = "http://" + request_url;
 		//Calling Request.request method to get inputStream
 		//Response resp = Request.request("GET", request_url,httpHeaders);
 		
@@ -68,7 +69,8 @@ public class GetObjectOp extends ObjectOp {
 	public Response processResult(Object request) throws Exception{
 		
 		URL requestUrl = new URL((String) request);
-		HttpURLConnection Connection = (HttpURLConnection) requestUrl.openConnection();
+		HttpsURLConnection Connection = (HttpsURLConnection) requestUrl.openConnection();
+		Connection.setSSLSocketFactory(Utils.getSslFactory());
 		Connection.setDoOutput(true);
 		Connection.setDoInput(true);
 		//Setting HTTP Method

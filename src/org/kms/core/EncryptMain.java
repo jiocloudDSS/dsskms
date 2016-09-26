@@ -37,7 +37,8 @@ public class EncryptMain extends HttpServlet {
 		// TODO Auto-generated method stub
         PrintWriter out  = response.getWriter();
         String userId, raw_data_key_str, raw_data_iv_str, encoded_data_key_str, encoded_data_iv_str, masterKey, encryptedMKVersionId, errorMsg;
-        userId=raw_data_key_str= raw_data_iv_str= encoded_data_key_str= encoded_data_iv_str = masterKey = encryptedMKVersionId = errorMsg = null;
+        userId= encoded_data_key_str= encoded_data_iv_str = masterKey = encryptedMKVersionId = errorMsg = null;
+        raw_data_key_str = raw_data_iv_str = "0";
         HashMap<String, String> queryParams = parseRequestParams(request);
         CryptoMain crypto = CryptoMain.getInstance();
 
@@ -49,8 +50,10 @@ public class EncryptMain extends HttpServlet {
         	try{        	
         		masterKey = requester.getLatestMasterKey();
         		if (masterKey != null){
-            		raw_data_key_str = crypto.generateKey(512);
-            		raw_data_iv_str = crypto.generateKey(128);
+        			while (!(raw_data_key_str.length() == 64 && raw_data_iv_str.length() == 16)){
+        				raw_data_key_str = crypto.generateKey(512);
+        				raw_data_iv_str = crypto.generateKey(128);
+        			}
         			encoded_data_key_str = crypto.encryptKey(raw_data_key_str, masterKey);
         			encoded_data_iv_str = crypto.encryptKey(raw_data_iv_str, masterKey);
         			encryptedMKVersionId = requester.getEncryptedMKVersion();

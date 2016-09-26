@@ -20,13 +20,13 @@ DssConnection conn;
 public static String MK_OBJ_NAME_SUFFIX = "_kms_master_key";
 private static String DSS_ACCESS_KEY = "access_key";//TODO:: need to put from a file
 private static String DSS_SECRET_KEY = "secret_key";//TODO:: need to put from a file
-private static String DSS_HOST_NAME = "server";
+private static String DSS_HOST_NAME = "https://dss.ind-west-1.staging.jiocloudservices.com";
 private static String DSS_MK_BUCKET = "kmsbucket1";
-//private static String MASTER_KEY = "abcdef0987654321";
+private static String MASTER_KEY = "abcdef0987654321";
 
 
 public MKRequester() {
-	conn = new DssConnection(DSS_ACCESS_KEY, DSS_SECRET_KEY, DSS_HOST_NAME, false);
+	conn = new DssConnection(DSS_ACCESS_KEY, DSS_SECRET_KEY, DSS_HOST_NAME, true);
 }
 
 public void setUserId(String _userId){
