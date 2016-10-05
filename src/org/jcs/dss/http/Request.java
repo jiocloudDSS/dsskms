@@ -26,7 +26,7 @@ public class Request {
 	public static Response request(String method, String url, Map<String, String> headers) throws Exception {
 		// Create a trust manager that does not validate certificate chains
 		URL requestUrl = new URL(url);
-		HttpsURLConnection Connection = null;
+		HttpURLConnection Connection = null;
 		if(!Config.isSecure())
 		{
 			TrustManager[] trustAllCerts = new TrustManager[] 
@@ -51,8 +51,8 @@ public class Request {
 			{
 				sc = SSLContext.getInstance("SSL");
 				sc.init(null, trustAllCerts, new java.security.SecureRandom());
-				Connection = (HttpsURLConnection) requestUrl.openConnection();
-				Connection.setSSLSocketFactory(sc.getSocketFactory());
+				Connection = (HttpURLConnection) requestUrl.openConnection();
+				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 			} 
 			catch (NoSuchAlgorithmException e) 
 			{
@@ -63,7 +63,7 @@ public class Request {
 			}
 		} else {
 			Connection = (HttpsURLConnection) requestUrl.openConnection();
-			Connection.setSSLSocketFactory(Utils.getSslFactory());
+//			Connection.setSSLSocketFactory(Utils.getSslFactory());
 		}
 		Connection.setDoOutput(true);
 		Connection.setDoInput(true);
@@ -112,7 +112,7 @@ public class Request {
 
 		// Create a trust manager that does not validate certificate chains
 		URL RequestUrl = new URL(Url);
-		HttpsURLConnection Connection = null;
+		HttpURLConnection Connection = null;
 		if(!Config.isSecure())
 		{
 			TrustManager[] trustAllCerts = new TrustManager[] 
@@ -137,8 +137,8 @@ public class Request {
 			{
 				sc = SSLContext.getInstance("SSL");
 				sc.init(null, trustAllCerts, new java.security.SecureRandom());
-				Connection = (HttpsURLConnection)RequestUrl.openConnection();
-				Connection.setSSLSocketFactory(sc.getSocketFactory());
+				Connection = (HttpURLConnection)RequestUrl.openConnection();
+				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 			} 
 			catch (NoSuchAlgorithmException e) 
 			{
@@ -149,7 +149,7 @@ public class Request {
 			}
 		} else {
 			Connection = (HttpsURLConnection)RequestUrl.openConnection();
-			Connection.setSSLSocketFactory(Utils.getSslFactory());
+			((HttpsURLConnection) Connection).setSSLSocketFactory(Utils.getSslFactory());
 		}
 		Connection.setDoOutput(true);
 		//Setting HTTP Method

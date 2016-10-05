@@ -11,6 +11,7 @@ import org.jcs.dss.auth.DssAuth;
 import org.jcs.dss.auth.DssAuthBuilder;
 import org.jcs.dss.http.ErrorResponse;
 import org.jcs.dss.http.Response;
+import org.jcs.dss.main.Config;
 import org.jcs.dss.main.DssConnection;
 import org.jcs.dss.utils.Utils;
 /// Class to download object file from request key to desired path
@@ -69,8 +70,13 @@ public class GetObjectOp extends ObjectOp {
 	public Response processResult(Object request) throws Exception{
 		
 		URL requestUrl = new URL((String) request);
-		HttpsURLConnection Connection = (HttpsURLConnection) requestUrl.openConnection();
-		Connection.setSSLSocketFactory(Utils.getSslFactory());
+		HttpURLConnection Connection = null;
+		if (Config.isSecure()){
+		Connection = (HttpsURLConnection) requestUrl.openConnection();
+		((HttpsURLConnection) Connection).setSSLSocketFactory(Utils.getSslFactory());
+		} else {
+			Connection = (HttpURLConnection)requestUrl.openConnection();
+		}
 		Connection.setDoOutput(true);
 		Connection.setDoInput(true);
 		//Setting HTTP Method
