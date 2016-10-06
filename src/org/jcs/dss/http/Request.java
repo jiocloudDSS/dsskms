@@ -63,7 +63,6 @@ public class Request {
 			}
 		} else {
 			Connection = (HttpsURLConnection) requestUrl.openConnection();
-//			Connection.setSSLSocketFactory(Utils.getSslFactory());
 		}
 		Connection.setDoOutput(true);
 		Connection.setDoInput(true);
@@ -149,7 +148,6 @@ public class Request {
 			}
 		} else {
 			Connection = (HttpsURLConnection)RequestUrl.openConnection();
-			((HttpsURLConnection) Connection).setSSLSocketFactory(Utils.getSslFactory());
 		}
 		Connection.setDoOutput(true);
 		//Setting HTTP Method

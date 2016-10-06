@@ -72,8 +72,7 @@ public class GetObjectOp extends ObjectOp {
 		URL requestUrl = new URL((String) request);
 		HttpURLConnection Connection = null;
 		if (Config.isSecure()){
-		Connection = (HttpsURLConnection) requestUrl.openConnection();
-		((HttpsURLConnection) Connection).setSSLSocketFactory(Utils.getSslFactory());
+			Connection = (HttpsURLConnection) requestUrl.openConnection();
 		} else {
 			Connection = (HttpURLConnection)requestUrl.openConnection();
 		}
