@@ -40,7 +40,7 @@ public class KMSUtils {
 	}
 	
 	public static void setupFields() {
-		String path = "/var/log/tomcat7webapps/Roort/WEB-INF/resources/config.properties";
+		String path = "/var/log/tomcat7/webapps/ROOT/WEB-INF/resources/config.properties";
 		Properties prop = new Properties();
 		InputStream input = null;
 
@@ -55,6 +55,11 @@ public class KMSUtils {
 			access = prop.getProperty("access");
 			secret = prop.getProperty("secret");
 			host = prop.getProperty("dssHost");
+			String secureStr = prop.getProperty("isSecure");
+			if (secureStr != null && secureStr.equals("true"))
+				secure = true;
+			else
+				secure = false;
 			sslStorePasswd = prop.getProperty("sslPasswd");
 			sslStorePath = prop.getProperty("sslStorePath");
 			dssBucket = prop.getProperty("bucketName");
@@ -68,7 +73,8 @@ public class KMSUtils {
 				host != null &&
 				sslStorePasswd != null &&
 				sslStorePath != null &&
-				globalKey != null) {
+				globalKey != null &&
+				secureStr != null) {
 				success = true;
 			} else {
 				success = false;
