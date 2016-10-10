@@ -40,7 +40,13 @@ public class EncryptMain extends HttpServlet {
         userId= encoded_data_key_str= encoded_data_iv_str = masterKey = encryptedMKVersionId = errorMsg = null;
         raw_data_key_str = raw_data_iv_str = "0";
         HashMap<String, String> queryParams = parseRequestParams(request);
+        if (!KMSUtils.confSetupDone()){
+        	errorMsg = "config not set";
+        	out.print("{\"Error\":\"" + errorMsg + "\"}");
+        	return;
+        }
         CryptoMain crypto = CryptoMain.getInstance();
+//        crypto.testing();
 
         if (queryParams.containsKey(USERID) && queryParams.get(USERID).length() > 0){
         	userId = queryParams.get(USERID);

@@ -8,7 +8,9 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.tomcat.util.codec.binary.Base64;
+
 import java.util.logging.Level;
+
 import org.kms.core.KMSUtils;
 
 
@@ -19,7 +21,7 @@ public class CryptoMain {
 	String encrypted_data_key;
 	private static HashMap<String, CryptoMain>instanceMap = new HashMap<String, CryptoMain>();
 	
-	private static String KMS_GLOBAL_KEY = "1234567890abcdef";
+	private static String KMS_GLOBAL_KEY;
 	private static String CURRENT_INSTANCE = "current_instance";
 	private SecureRandom random;
 	
@@ -33,6 +35,7 @@ public class CryptoMain {
 		} else {
 			CryptoMain crypto = new CryptoMain();
 			instanceMap.put(CURRENT_INSTANCE, crypto);
+			KMS_GLOBAL_KEY = KMSUtils.globalKey;
 			return crypto;
 		}
 	}

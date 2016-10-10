@@ -1,5 +1,9 @@
 package org.kms.core;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -10,17 +14,14 @@ public class KMSUtils {
 	private static ConcurrentHashMap<String, Integer>lockMap = new ConcurrentHashMap<String, Integer>();
 	private static Lock lock = new ReentrantLock();
 	public static Logger logger = Logger.getLogger("KMSUtils");
+	public static String access, secret, sslStorePath, host, sslStorePasswd, dssBucket, globalKey, objNameSuffix, rotationType, rotationMin;
+	public static boolean secure;
+	public static boolean success = false;
+	public static boolean fieldsSetupDone = false;
 
 	static ConcurrentHashMap<String, Integer> getMap(){
 		return lockMap;
 	}
-
-
-//	static Logger getKMSLogger(){
-//		if (logger !=null)
-//			return logger;
-//		else return Logger.getLogger("KMSUtils");
-//	}
 
 	public static boolean putWithLock(String id){
 		if (lockMap.containsKey(id)){
@@ -36,6 +37,64 @@ public class KMSUtils {
 				return true;
 			}
 		}
+	}
+	
+	public static void setupFields() {
+		String path = "/var/log/tomcat7webapps/Roort/WEB-INF/resources/config.properties";
+		Properties prop = new Properties();
+		InputStream input = null;
+
+		try {
+
+			input = new FileInputStream(path);
+
+			// load a properties file
+			prop.load(input);
+
+			// get the property value and print it out
+			access = prop.getProperty("access");
+			secret = prop.getProperty("secret");
+			host = prop.getProperty("dssHost");
+			sslStorePasswd = prop.getProperty("sslPasswd");
+			sslStorePath = prop.getProperty("sslStorePath");
+			dssBucket = prop.getProperty("bucketName");
+			globalKey = prop.getProperty("kms_global_key");
+			objNameSuffix = prop.getProperty("objNameSuffix", "_kms_master_key");
+			rotationType = prop.getProperty("rotation", "day");
+			rotationMin = prop.getProperty("rotationDuration", "60");
+			
+			if (access != null && 
+				secret !=null &&
+				host != null &&
+				sslStorePasswd != null &&
+				sslStorePath != null &&
+				globalKey != null) {
+				success = true;
+			} else {
+				success = false;
+			}
+
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		} finally {
+			if (input != null) {
+				try {
+					input.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	public static boolean confSetupDone() {
+		if (!fieldsSetupDone) {
+			KMSUtils.setupFields();
+			if (success){
+				fieldsSetupDone= true;
+				return fieldsSetupDone;
+			} else return false;
+		} else return true;
 	}
 	
 }
