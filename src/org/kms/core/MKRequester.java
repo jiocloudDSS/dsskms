@@ -30,11 +30,16 @@ public void setUserId(String _userId){
 
 public String getLatestMasterKey(){
 	String rType = KMSUtils.rotationType;
-	if (rType == "month") getVSuffix(true, false, 0);
-	else if (rType == "day") getVSuffix(false, true, 0);
-	else if (rType == "min") {
-		int min = 2;
-		getVSuffix(false, true, min);
+	if (rType == "false"){
+		mkVersionSuffix = "00000000";
+	} else {
+		if (rType == "year") getVSuffix(true, false, false, 0);
+		else if (rType == "month") getVSuffix(false, true, false, 0);
+		else if (rType == "day") getVSuffix(false, false, true, 0);
+		else if (rType == "min") {
+			int min = 2;
+			getVSuffix(false, false, true, min);
+		}
 	}
 	mkObjectName = user_id + KMSUtils.objNameSuffix + mkVersionSuffix;
 	return getMasterKey();
@@ -161,18 +166,22 @@ public String generateRawMasterKey() throws Exception {
 	return masterKey;
 }
 
-public void getVSuffix(boolean isMonth, boolean isDay, int min ) {
+public void getVSuffix(boolean isYear, boolean isMonth, boolean isDay, int min ) {
 	Date date = new Date();
     Calendar cal = Calendar.getInstance();
     cal.setTime(date);
     int year = cal.get(Calendar.YEAR);
     int month = cal.get(Calendar.MONTH) + 1;
+
+    if (isYear) {
+    	makeVPrefixString(0, 0, year, -1);
+    }
     if (isMonth) {
-		makeVPrefixString(0, month, year, 0);
+		makeVPrefixString(0, month, year, -1);
     } else {
 		int day = cal.get(Calendar.DAY_OF_MONTH);
     	if (min == 0) {
-			makeVPrefixString(day, month, year, 0);
+			makeVPrefixString(day, month, year, -1);
     	} else {
     		int hour = cal.get(Calendar.HOUR_OF_DAY);
     		int minute = cal.get(Calendar.MINUTE);
@@ -187,7 +196,8 @@ public void makeVPrefixString(int day, int month, int year, int min){
 	String mStr, dStr, yStr, minStr;
 	if (month < 10) 
 		mStr = "0" + month;
-	else mStr = "" + month;
+	else
+		mStr = "" + month;
 	
 	if (day < 10) 
 		dStr = "0" + day;
@@ -195,7 +205,11 @@ public void makeVPrefixString(int day, int month, int year, int min){
 		dStr = "" + day;
 	
 	yStr = "" + year;
-	minStr = "" + min;
+
+	if (min == -1)
+		minStr = "";
+	else
+		minStr = "" + min;
 	
 	mkVersionSuffix =  "_" + minStr + dStr + mStr + yStr;
 

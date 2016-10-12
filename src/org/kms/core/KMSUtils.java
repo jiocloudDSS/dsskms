@@ -40,7 +40,7 @@ public class KMSUtils {
 	}
 	
 	public static void setupFields() {
-		String path = "/var/log/tomcat7webapps/Roort/WEB-INF/resources/config.properties";
+		String path = "/var/lib/tomcat7/webapps/ROOT/WEB-INF/resources/config.properties";
 		Properties prop = new Properties();
 		InputStream input = null;
 
@@ -55,12 +55,17 @@ public class KMSUtils {
 			access = prop.getProperty("access");
 			secret = prop.getProperty("secret");
 			host = prop.getProperty("dssHost");
+			String secureStr = prop.getProperty("isSecure", "true");
+			if (secureStr.equals("true"))
+				secure = true;
+			else
+				secure = false;
 			sslStorePasswd = prop.getProperty("sslPasswd");
 			sslStorePath = prop.getProperty("sslStorePath");
 			dssBucket = prop.getProperty("bucketName");
 			globalKey = prop.getProperty("kms_global_key");
 			objNameSuffix = prop.getProperty("objNameSuffix", "_kms_master_key");
-			rotationType = prop.getProperty("rotation", "day");
+			rotationType = prop.getProperty("rotation", "month");
 			rotationMin = prop.getProperty("rotationDuration", "60");
 			
 			if (access != null && 
@@ -68,7 +73,8 @@ public class KMSUtils {
 				host != null &&
 				sslStorePasswd != null &&
 				sslStorePath != null &&
-				globalKey != null) {
+				globalKey != null &&
+				secureStr != null) {
 				success = true;
 			} else {
 				success = false;
