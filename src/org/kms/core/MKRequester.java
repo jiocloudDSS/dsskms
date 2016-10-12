@@ -1,6 +1,7 @@
 package org.kms.core;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Level;
 
 import org.jcs.dss.http.ErrorResponse;
 import org.jcs.dss.http.Response;
@@ -17,16 +18,10 @@ String mkVersionSuffix;
 String iv_str;
 DssConnection conn;
 
-public static String MK_OBJ_NAME_SUFFIX = "_kms_master_key";
-private static String DSS_ACCESS_KEY = "0555b35654ad1656d804";
-private static String DSS_SECRET_KEY = "abcdefghijklmnopqrstuvwxyzabcdefghijklmn";
-private static String DSS_HOST_NAME = "10.140.13.22:8000";
-private static String DSS_MK_BUCKET = "mptest";
-//private static String MASTER_KEY = "abcdef0987654321";
-
+private static String MASTER_KEY = "abcdef0987654321";
 
 public MKRequester() {
-	conn = new DssConnection(DSS_ACCESS_KEY, DSS_SECRET_KEY, DSS_HOST_NAME, false);
+	conn = new DssConnection(KMSUtils.access, KMSUtils.secret, KMSUtils.host, KMSUtils.secure);
 }
 
 public void setUserId(String _userId){
@@ -34,24 +29,21 @@ public void setUserId(String _userId){
 }
 
 public String getLatestMasterKey(){
-	Date date = new Date();
-    Calendar cal = Calendar.getInstance();
-    cal.setTime(date);
-    int year = cal.get(Calendar.YEAR);
-    int month = cal.get(Calendar.MONTH) + 1;
-    if (month < 10){
-	    mkVersionSuffix = "_0" + month + year;
-    } else {
-	    mkVersionSuffix = "_" + month + year;
-    }
-	mkObjectName = user_id + MK_OBJ_NAME_SUFFIX + mkVersionSuffix;
+	String rType = KMSUtils.rotationType;
+	if (rType == "month") getVSuffix(true, false, 0);
+	else if (rType == "day") getVSuffix(false, true, 0);
+	else if (rType == "min") {
+		int min = 2;
+		getVSuffix(false, true, min);
+	}
+	mkObjectName = user_id + KMSUtils.objNameSuffix + mkVersionSuffix;
 	return getMasterKey();
 }
 
 public String getMasterKeyForVersion(String encryptedMKStr){
 	CryptoMain crypto = CryptoMain.getInstance();
 	try {
-		mkObjectName = crypto.decryptText(encryptedMKStr, crypto.getGlobalKey());
+		mkObjectName = crypto.decryptText(encryptedMKStr, crypto.getGlobalKey(), null);
 	} catch (Exception e){
 		mkObjectName = "";
 	}
@@ -61,7 +53,7 @@ public String getMasterKeyForVersion(String encryptedMKStr){
 private String getUserIdFromRequestMK(){
 	int loc = mkObjectName.indexOf("_");
 	String userID = mkObjectName.substring(0, loc);
-	if (loc == -1)
+	if (loc != -1)
 		return userID;
 	else return null;
 }
@@ -81,17 +73,18 @@ public String getEncryptedMKVersion() {
 public String getMasterKey() {
 	/* code for get object master key from radosgw backend */
 	int retry = 0;
+	long dssStartTime = System.currentTimeMillis();
 	String master_key = null;
 	String decrypted_master_key = null;
 	CryptoMain crypto = CryptoMain.getInstance();
 	while (retry < 5) {
 		try {
-			Response res = conn.downloadObject(DSS_MK_BUCKET, mkObjectName);
+			Response res = conn.downloadObject(KMSUtils.dssBucket, mkObjectName);
 			if (res.getStatusCode() == 200) {
 				master_key = res.getXMLString();
 				if (master_key != null){
 					try {
-						decrypted_master_key = crypto.decryptText(master_key, crypto.getGlobalKey());
+						decrypted_master_key = crypto.decryptText(master_key, crypto.getGlobalKey(), null);
 					} catch (Exception e){
 						return null;
 					}
@@ -109,12 +102,12 @@ public String getMasterKey() {
 						while (KMSUtils.getMap().containsKey(uid)){
 							Thread.sleep(50);
 						}
-						Response res = conn.downloadObject(DSS_MK_BUCKET, mkObjectName);
+						Response res = conn.downloadObject(KMSUtils.dssBucket, mkObjectName);
 						if (res.getStatusCode() == 200) {
 							master_key = res.getXMLString();
 							if (master_key != null){
 								try {
-									decrypted_master_key = crypto.decryptText(master_key, crypto.getGlobalKey());
+									decrypted_master_key = crypto.decryptText(master_key, crypto.getGlobalKey(), null);
 								} catch (Exception e){
 									return null;
 								}
@@ -142,30 +135,16 @@ public String getMasterKey() {
 		}
 		retry++;
 	}
+	long dssEndTime = System.currentTimeMillis();
+	KMSUtils.logger.logp(Level.INFO, "MKRequester", "getMasterKey", "this is the total time to get master key:  " + Long.toString((dssEndTime - dssStartTime)) + " for key: " + mkObjectName);
 	return decrypted_master_key;
 
 }
 
-//private String processBackendResponse(Response res){
-//	try{
-//		InputStream inputStream = res.getData();
-//		ByteArrayOutputStream result = new ByteArrayOutputStream();
-//		byte[] buffer = new byte[1024];
-//		int length;
-//		while ((length = inputStream.read(buffer)) != -1) {
-//			result.write(buffer, 0, length);
-//		}
-//		String resStr =  result.toString("UTF-8");
-//		return resStr;
-//	} catch (Exception e) {
-//		return null;
-//	}
-//}
-
 public boolean putMasterKeyToBackend(String master_key) throws Exception {
 	int retry = 0;
 	while (retry < 5){
-		Response res = conn.uploadObjectFromFileName(DSS_MK_BUCKET, mkObjectName, master_key);
+		Response res = conn.uploadObjectFromFileName(KMSUtils.dssBucket, mkObjectName, master_key);
 		if (res.getStatusCode() == 200) {
 			return true;
 		}
@@ -182,6 +161,45 @@ public String generateRawMasterKey() throws Exception {
 	return masterKey;
 }
 
+public void getVSuffix(boolean isMonth, boolean isDay, int min ) {
+	Date date = new Date();
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(date);
+    int year = cal.get(Calendar.YEAR);
+    int month = cal.get(Calendar.MONTH) + 1;
+    if (isMonth) {
+		makeVPrefixString(0, month, year, 0);
+    } else {
+		int day = cal.get(Calendar.DAY_OF_MONTH);
+    	if (min == 0) {
+			makeVPrefixString(day, month, year, 0);
+    	} else {
+    		int hour = cal.get(Calendar.HOUR_OF_DAY);
+    		int minute = cal.get(Calendar.MINUTE);
+    		int currentMin = (hour*60 + minute) - ((hour*60 + minute) % min);
+			makeVPrefixString(day, month, year, currentMin);
+    		
+    	}
+    }
 }
 
+public void makeVPrefixString(int day, int month, int year, int min){
+	String mStr, dStr, yStr, minStr;
+	if (month < 10) 
+		mStr = "0" + month;
+	else mStr = "" + month;
+	
+	if (day < 10) 
+		dStr = "0" + day;
+	else
+		dStr = "" + day;
+	
+	yStr = "" + year;
+	minStr = "" + min;
+	
+	mkVersionSuffix =  "_" + minStr + dStr + mStr + yStr;
+
+}
+
+}
 

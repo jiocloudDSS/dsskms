@@ -5,10 +5,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map.Entry;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import org.jcs.dss.auth.DssAuth;
 import org.jcs.dss.auth.DssAuthBuilder;
 import org.jcs.dss.http.ErrorResponse;
 import org.jcs.dss.http.Response;
+import org.jcs.dss.main.Config;
 import org.jcs.dss.main.DssConnection;
 import org.jcs.dss.utils.Utils;
 /// Class to download object file from request key to desired path
@@ -51,7 +54,6 @@ public class GetObjectOp extends ObjectOp {
 		httpHeaders.put("Date", date);
 		String path = Utils.getEncodedURL(opPath);
 		String request_url = conn.getHost() + path;
-		request_url = "http://" + request_url;
 		//Calling Request.request method to get inputStream
 		//Response resp = Request.request("GET", request_url,httpHeaders);
 		
@@ -68,7 +70,13 @@ public class GetObjectOp extends ObjectOp {
 	public Response processResult(Object request) throws Exception{
 		
 		URL requestUrl = new URL((String) request);
-		HttpURLConnection Connection = (HttpURLConnection) requestUrl.openConnection();
+		HttpURLConnection Connection = null;
+		if (Config.isSecure()){
+		Connection = (HttpsURLConnection) requestUrl.openConnection();
+		((HttpsURLConnection) Connection).setSSLSocketFactory(Utils.getSslFactory());
+		} else {
+			Connection = (HttpURLConnection)requestUrl.openConnection();
+		}
 		Connection.setDoOutput(true);
 		Connection.setDoInput(true);
 		//Setting HTTP Method
