@@ -8,8 +8,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import javax.net.ssl.*;
+
 import org.jcs.dss.main.Config;
+import org.jcs.dss.utils.Utils;
 /// Class to make connection to JCS DSS Server
 public class Request {
 	///To create connection and to store response in resp object of Response class
@@ -22,6 +25,8 @@ public class Request {
 	 */
 	public static Response request(String method, String url, Map<String, String> headers) throws Exception {
 		// Create a trust manager that does not validate certificate chains
+		URL requestUrl = new URL(url);
+		HttpURLConnection Connection = null;
 		if(!Config.isSecure())
 		{
 			TrustManager[] trustAllCerts = new TrustManager[] 
@@ -46,6 +51,7 @@ public class Request {
 			{
 				sc = SSLContext.getInstance("SSL");
 				sc.init(null, trustAllCerts, new java.security.SecureRandom());
+				Connection = (HttpURLConnection) requestUrl.openConnection();
 				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 			} 
 			catch (NoSuchAlgorithmException e) 
@@ -55,9 +61,9 @@ public class Request {
 			catch (KeyManagementException e) {
 				e.printStackTrace();
 			}
+		} else {
+			Connection = (HttpsURLConnection) requestUrl.openConnection();
 		}
-		URL requestUrl = new URL(url);
-		HttpURLConnection Connection = (HttpURLConnection) requestUrl.openConnection();
 		Connection.setDoOutput(true);
 		Connection.setDoInput(true);
 		//Setting HTTP Method
@@ -104,6 +110,8 @@ public class Request {
 	public static Response Put(String httpMethod,String Url,Map<String, String> HttpHeader,InputStream Data) throws InvalidKeyException, NoSuchAlgorithmException, IOException, ErrorResponse{
 
 		// Create a trust manager that does not validate certificate chains
+		URL RequestUrl = new URL(Url);
+		HttpURLConnection Connection = null;
 		if(!Config.isSecure())
 		{
 			TrustManager[] trustAllCerts = new TrustManager[] 
@@ -128,6 +136,7 @@ public class Request {
 			{
 				sc = SSLContext.getInstance("SSL");
 				sc.init(null, trustAllCerts, new java.security.SecureRandom());
+				Connection = (HttpURLConnection)RequestUrl.openConnection();
 				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 			} 
 			catch (NoSuchAlgorithmException e) 
@@ -137,10 +146,9 @@ public class Request {
 			catch (KeyManagementException e) {
 				e.printStackTrace();
 			}
+		} else {
+			Connection = (HttpsURLConnection)RequestUrl.openConnection();
 		}
-		Url = "http://" + Url;
-		URL RequestUrl = new URL(Url);
-		HttpURLConnection Connection = (HttpURLConnection)RequestUrl.openConnection();
 		Connection.setDoOutput(true);
 		//Setting HTTP Method
 		Connection.setRequestMethod(httpMethod);
